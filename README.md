@@ -9,9 +9,13 @@ https://www.instructables.com/id/Weather-Forecast-Clock-Using-Old-Alarm-and-Ardu
 How-to video here:
 https://www.youtube.com/watch?v=-FDuY51MYSw
 
+BME280 library:
+https://github.com/adafruit/Adafruit_BME280_Library
+
 RTC DS1307 and Nokia 5110 LCD libraries used in this project:
 http://www.rinkydinkelectronics.com/library.php?id=34
 http://www.rinkydinkelectronics.com/library.php?id=44
+A copy of these libraries is also placed here in case the original site goes down.
 
-BME280 library:
-https://github.com/adafruit/Adafruit_BME280_Library
+My YouTube channel:
+https://www.youtube.com/channel/UColx1N95LGEPmMA9na1DYSQ
