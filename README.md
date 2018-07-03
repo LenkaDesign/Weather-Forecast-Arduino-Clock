@@ -18,4 +18,4 @@ http://www.rinkydinkelectronics.com/library.php?id=44
 A copy of these libraries is also placed here in case the original site goes down.
 
 My YouTube channel:
-https://www.youtube.com/channel/UColx1N95LGEPmMA9na1DYSQ
+http://www.youtube.com/c/LenkaDesign
