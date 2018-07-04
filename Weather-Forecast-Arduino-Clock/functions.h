@@ -48,7 +48,6 @@ typedef struct
 Menu_Struct MMenus[20]; // Number of ALL Items
 
 
-
 volatile boolean MenuButton = false;
 // Interrupt Menu-Button Function
 // --------------------------
@@ -75,7 +74,7 @@ void GetButtonStatus () {
   if  (((digitalRead(BUT_OK) == HIGH)||((MenuButton)))&&((CurrTime - DebounceTime > 300))&&(PrevBut != 3)) 
       { ButtonStatus[3] = true; AnyKey = true; MenuButton = false; PrevBut = 3;} else { MenuButton = false; } // OK-MENU
   
-  if (CurrTime - DebounceTime > 1500) {PrevBut = 0;} // Reset Press Button Memory
+  if (CurrTime - DebounceTime > 1500) {PrevBut = 0; } // Reset Press Button Memory
   ButtonStatus[0] = AnyKey; // Any Button Pressed
   
   if (AnyKey) { DebounceTime = millis(); }
@@ -196,7 +195,7 @@ const byte LinkData[] = {11, 12, 17, 18, 5, 8, 9, 14, 15};
 // --------------------------
 void ShowStructMenu (byte numItem) {
   lcd.clrScr();
-  LCDLight(true);
+  //LCDLight(true);
   UpdateSettings();
   byte x = 1; // Count Items for Current Parent
   byte xItem = 0; // Current Position
@@ -240,11 +239,11 @@ void ShowStructMenu (byte numItem) {
        case 4: // 4 - Show Change HH/MM
               ShowT2Menu(numItem, xItem);
               break;
-       default: // For Others type show Debug info
+    /*   default: // For Others type show Debug info
               lcd.printNumI(numItem,10,10); 
               lcd.printNumI(x,10,20); 
               lcd.printNumI(xItem,10,30); 
-              lcd.printNumI(MMenus[numItem].type,10,40);
+              lcd.printNumI(MMenus[numItem].type,10,40);*/
         }
       lcd.update(); // Send Info to LCD
       // ~~~~~~~~~~~~~~~~~~~~~~
@@ -316,6 +315,7 @@ void playMusic()
     delay(pauseBetweenNotes);
     GetButtonStatus();
   }
+noTone(BUZZ_PIN);
 }
 // ========================================
 
@@ -346,22 +346,23 @@ void ShowClock() {
             {
              if ((!AlarmOn)||(AlarmTime == 0))
              {
+             // Speaker Action
+             if (MMenus[LinkData[5]].value == 1) {/* LCDLight (false);*/ playMusic(); }
              // Motor Action
              if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, motorSpeed); }
-             // Speaker Action
-             if (MMenus[LinkData[5]].value == 1) { playMusic(); }
              AlarmTime = millis();
              MotorTurn = true;
              }
              LCDLight (!backlight);
              AlarmOn = true;
-            } else if (AlarmOn)
+            } 
+            /*else if (AlarmOn)
               {
                 AlarmOn = false;
                 if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, 0);}
                 if (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
               }
-
+            */
         if (!AlarmOn)
         {
           if ((MMenus[LinkData[5]].value == 1)||(MMenus[LinkData[6]].value == 1)) { lcd.drawBitmap(0, 0, IconAlarmMini, 8, 8); }
@@ -391,8 +392,11 @@ void ShowClock() {
     else {
       lcd.print(String(rtc_time.min), 47, 12);
     }
-    lcd.setFont(SmallFont);
-    lcd.print(tm.getDateStr(FORMAT_LONG,FORMAT_LITTLEENDIAN,'/'), CENTER, 41);
+    // Show Date
+    //if (MMenus[LinkData[9]].value == 1){
+      lcd.setFont(SmallFont);
+      lcd.print(tm.getDateStr(FORMAT_LONG,FORMAT_LITTLEENDIAN,'/'), CENTER, 41);
+    //}
     
     if (!AlarmOn) {
     for (byte i=0; i < 5; i++){
@@ -411,25 +415,20 @@ void ShowClock() {
 
     // Check Alarm Action State
     if (AlarmOn) {
-      /*if ((MMenus[LinkData[6]].value == 1)&&(millis() - AlarmTime > 8000))  { 
-          if (MotorTurn) {analogWrite(MOTOR_PIN, 0); MotorTurn = false;}
-          if (millis() - AlarmTime > 16000) {AlarmTime = 0;}
-          }*/
-
-      if (millis() - AlarmTime > 8000)
+      if (millis() - AlarmTime > (4000*(MMenus[LinkData[6]].value+1)))
         {
           if (MotorTurn) { 
             MotorTurn = false; 
             if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, 0);}
-            if (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
+            //if (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
           }
-          if (millis() - AlarmTime > 15000) {AlarmTime = 0;}
+          if (millis() - AlarmTime > (7500*(MMenus[LinkData[6]].value+1))) {AlarmTime = 0;}
         }
       
       GetButtonStatus();
       if (ButtonStatus[0]) {
           if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, 0);}
-          if (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
+          //if (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
           LCDLight (false); // LCD Light On
           MMenus[LinkData[4]].value = 0; // Change Item Value 
           UpdateSettings(); // Save New Settings on RTC Module
@@ -442,6 +441,16 @@ void ShowClock() {
 }
 // ========================================
 
+// Calculate Normal Pressure for Altitude & Temperature
+// -----------------
+float GetNormalPressure(int a, int t) {
+  float L = 0.0065;
+  float B;
+  B = L / (273.15+t);
+  return (1013.25*pow((1-B*a),5.2556));
+}
+// ========================================
+
 // BME Get & Store Data from Sensor
 // -----------------
 float BMEGetData()
@@ -449,8 +458,32 @@ float BMEGetData()
   temperature = bme.readTemperature();
   humidity = bme.readHumidity();
   pressure = bme.readPressure();
-  pressure = bme.seaLevelForAltitude(altitude, pressure);
   pressure = pressure/100.0F;
+
+  // Calculate Pressure
+  if (my_forecast[0] == 0)
+    { // First Start or After Update Settings
+      for (byte i = 0; i < 4; i++) { my_forecast[i] = pressure; }
+    } else {
+      // Check Change
+      if (my_forecast[0] > pressure) my_forecast[4] = 1; // Up
+        else if (my_forecast[0] < pressure) my_forecast[4] = 2; // Down
+          else my_forecast[4] = 0; // Equal
+      my_forecast[0] = pressure; // Current
+      // Fix maximum and minimum pressure
+      if (forecast_count <= 15) // 3 Hours (every 12min)
+      {
+        if (my_forecast[0] > my_forecast[2]) my_forecast[2] = my_forecast[0];
+        if (my_forecast[0] < my_forecast[3]) my_forecast[3] = my_forecast[0];
+        my_forecast[1] = my_forecast[2] - my_forecast[3];
+      } else {
+       // Save new limit
+       my_forecast[2] = my_forecast[0];
+       my_forecast[3] = my_forecast[0] - (my_forecast[1] / 3);
+       forecast_count = 0;
+      }
+    }
+  forecast_count++;
 }
 // ========================================
 
@@ -459,9 +492,17 @@ float BMEGetData()
 void drawCelcius(byte x, byte y){
   lcd.setFont(BigNumbers);
   lcd.drawCircle(x, y, 2);
-  lcd.printNumI(0,x+3,y);
-  lcd.clrRect(x+14,y, x+15,y+24);
-  lcd.clrRect(x+13,y+3, x+14,y+21);
+  if (MMenus[LinkData[7]].value == 0) {
+    lcd.printNumI(6,x+3,y);
+    lcd.clrRect(x+5, y+22, x+15, y+23);
+    lcd.clrRect(x+7, y+21, x+15, y+21);
+    lcd.clrRect(x+14,y+13, x+15, y+23);
+    lcd.clrRect(x+13,y+15, x+14, y+23);
+  } else {
+    lcd.printNumI(0,x+3,y);
+    lcd.clrRect(x+14,y, x+15,y+24);
+    lcd.clrRect(x+13,y+3, x+14,y+21);
+  } 
 }
 // ========================================
 
@@ -475,35 +516,47 @@ void drawPercent(byte x, byte y){
 }
 // ========================================
 
-// Draw Weather Icons
+// Draw Weather & Forecast
 // -----------------
-void drawWeather(byte sel){
+void drawWeather(){
+  byte sel = 1;
   lcd.clrScr();
+  float norma;
+  lcd.setFont(SmallFont);
+  
+  norma = GetNormalPressure(altitude, temperature-5); // Get Norma
 
+  // Weather Forecasting 
+  if ((my_forecast[0] > norma+10) && (my_forecast[1] < 2)&&(my_forecast[4] <= 1)) {sel = 1;}
+  //if  (my_forecast[0] < norma-5) {sel = 3;}
+  else if ((my_forecast[0] < norma+15) && (my_forecast[1] > 2)) {sel = 2;}
+  else if ((my_forecast[0] > (norma-30)) && (my_forecast[0] < (norma-3)) && (my_forecast[4] == 2)) {sel = 2;}
+  else sel = 3;
+  
+  if ((old_sel != sel ) && (MMenus[LinkData[8]].value == 1)) {playMusic();}
+  old_sel = sel;
+  
   // Select Icon
   switch (sel) {
     case 1: // Clear
-      lcd.drawBitmap(0, 0, IconClear, 49, 48);
-      lcd.setFont(SmallFont);
-      lcd.print("Clear",49,13);
-      lcd.print("Weather",42,28);    
+      lcd.drawBitmap(28, 13, IconClear, 24, 24);
+      lcd.print("Sunny Weather",CENTER, 0);    
       break;
     case 2: // Rainy
-      lcd.drawBitmap(0, 0, IconRainy, 49, 48);
-      lcd.setFont(SmallFont);
-      lcd.print("Rainy",52,15);
-      lcd.print("Weather",43,28);
+      lcd.drawBitmap(28, 13, IconRainy, 24, 24);
+      lcd.print("Rainy Weather",CENTER, 0);
       break;
     default: 
-      lcd.drawBitmap(0, 0, IconCloudy, 49, 48);
-      lcd.setFont(SmallFont);
-      lcd.print("Cloudy",48,12);
-      lcd.print("Weather",42,28);
+      lcd.drawBitmap(28, 13, IconWeather, 24, 24);
+      lcd.print("Cloudy Weather",CENTER, 0);
   } // .end Switch Select
-  // Show Pressure
-  lcd.printNumF(round(pressure),0,51,40);
+
+  
+  // Print Pressure and Forecast
+  if (MMenus[LinkData[7]].value == 0) lcd.print(String(my_forecast[0])+" hPa",CENTER,38); 
+    else lcd.print(String(round(my_forecast[0]*0.7501))+" mmHg",CENTER,38); 
+    
   lcd.update();
-  delay(3000);
 }
 // ========================================
 
@@ -511,11 +564,17 @@ void drawWeather(byte sel){
 // -----------------
 void drawTemperature (){
   lcd.clrScr();
-  lcd.drawBitmap(0, 0, IconTemperature, 28, 48);
   lcd.setFont(BigNumbers);
-  lcd.printNumF(round(temperature),0,35,10);
-  // print celcius sign
-  drawCelcius(66, 10);
+  if (MMenus[LinkData[7]].value == 0)
+    { 
+      if (((temperature*1.8)+32) > 100)
+          lcd.printNumF(round((temperature*1.8)+32),0,23,10);
+        else lcd.printNumF(round((temperature*1.8)+32),0,35,10);
+    } else {
+      lcd.printNumF(temperature,0,35,10);
+    }
+    lcd.drawBitmap(0, 0, IconTemperature, 28, 48);
+    drawCelcius(66, 10);
   lcd.update();
 }
 // ========================================
@@ -526,11 +585,11 @@ void drawHumidity (){
   lcd.clrScr();
   lcd.drawBitmap(0, 0, IconHumidity, 30, 48);
   lcd.setFont(BigNumbers);
-  lcd.printNumF(round(humidity),0,35,10);
+  lcd.printNumF(humidity,0,35,10);
   drawPercent(68, 14); // draw percent sign at these coordinates
   lcd.setFont(SmallFont);
-  if (round(humidity) < 30) lcd.print("Too dry",36,38);
-      else if (round(humidity) < 55) lcd.print("Ideal",40,38);
+  if (humidity < 30) lcd.print("Too dry",36,38);
+      else if (humidity < 55) lcd.print("Ideal",40,38);
               else lcd.print("Too humid",30,38);
   lcd.update();
 }
@@ -557,7 +616,7 @@ void fillBat(byte percent){
 // Voltage and Lighting Show
 // -----------------
 void drawVoltage (){
-   
+  byte voltagePercent = 0;
   float voltage = analogRead(VOLT_PIN) * (5.0 / 1023.0);
   
   lcd.clrScr();
