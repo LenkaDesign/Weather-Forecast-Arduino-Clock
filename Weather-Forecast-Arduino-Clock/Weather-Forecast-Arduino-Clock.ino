@@ -40,7 +40,6 @@
 // System Memory Storage
 // ========================================
 // Main array
-byte voltagePercent = 0;
 boolean backlight = false; // indicates backlight
 const byte motorSpeed = 80;
 int lightIntensity = 0;
@@ -51,7 +50,6 @@ const byte intensityThreshold = 50; // bigger than this value means it's dark. 1
 // MelodyAlarm [8], BellAlarm [9], WeatherMeasure [14], WeatherWarning[15]
 const byte LinkData[] = {11, 12, 17, 18, 5, 8, 9, 14, 15};
 
-
 // Button Array
 // { AnyKey, Up, Down, OK }
 bool ButtonStatus[4] = {false, false, false, false};
@@ -59,12 +57,20 @@ bool ButtonStatus[4] = {false, false, false, false};
 
 // -----------------
 // Forecast array
+int my_forecast[] = {0,0,0,0,0};
+/*
+ * 0 - Current pressure
+ * 1 - Difference Max - Min
+ * 2 - Max. Pressure
+ * 3 - Min. Pressure
+ * 4 - Pressure Dynamic (1 - Up, 2 - Down, 0 - Equal)
+*/
+byte forecast_count = 0;
 int temperature = 0;
-int humidity;
-int pressure;
-int altitude = 156; // Altitude in Prague: 399m
-// Altitude in Moscow: 156m
-// Altitude in Kislovodsk: 848m
+byte humidity;
+float pressure = 0;
+byte old_sel = 1;
+const int altitude = 155; // Default: 155
 // -----------------
 // ========================================
 
@@ -113,7 +119,7 @@ extern uint8_t IconSound[];
 // -=[ SETUP Section ]=-
 // ========================================
 void setup() {
-  // Strat RTC DS1307  
+  // Start RTC DS1307  
   tm.begin();
   rtc_time = tm.getTime();
 
@@ -177,11 +183,12 @@ void setup() {
   // Setup motor
   pinMode(MOTOR_PIN, OUTPUT); // motor
 
-  lcd.print("LOADING...", CENTER, 20);
-  lcd.update();
+  //lcd.print("LOADING...", CENTER, 20);
+  //lcd.update();
 
   // Setup BME weather sensor
   if (!bme.begin(BME_I2C)) {
+      lcd.clrScr();
       lcd.print("!!!ERROR!!!", CENTER, 10);
       lcd.print("Check BME...", CENTER, 20);
       lcd.update();
@@ -189,6 +196,8 @@ void setup() {
   }
   MenuButton = false;  
   DebounceTime = millis();
+ 
+  BMEGetData();
 }
 // ========================================
 // -=[ LOOP ]=-
@@ -197,9 +206,12 @@ void loop() {
   CheckLCDLigh();
   ShowClock();
   KeepCalm(10);
-  BMEGetData();
+  if (rtc_time.min % 12 == 0) 
+    {
+      BMEGetData();
+    }
   drawTemperature();
-  KeepCalm(3000);
+  KeepCalm(5000);
   drawHumidity();
   KeepCalm(3000);
   if (rtc_time.min % 3 == 0) 
@@ -207,5 +219,7 @@ void loop() {
       drawVoltage();  
       KeepCalm(3000);  
     }
+  drawWeather();
+  KeepCalm(5000);
 }
 // ========================================
