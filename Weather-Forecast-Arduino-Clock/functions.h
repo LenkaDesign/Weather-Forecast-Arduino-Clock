@@ -45,7 +45,7 @@ typedef struct
  }  Menu_Struct;
 // --------------------------
 
-Menu_Struct MMenus[20]; // Number of ALL Items
+Menu_Struct MMenus[21]; // Number of ALL Items
 
 
 volatile boolean MenuButton = false;
@@ -186,7 +186,10 @@ const byte LinkData[] = {11, 12, 17, 18, 5, 8, 9, 14, 15};
         { tm.setTime (MMenus[LinkData[0]].value, MMenus[LinkData[1]].value, 0);}
     // All other tor RTC Memory
     for (byte i = 2; i < (sizeof(LinkData)/sizeof(byte)); i++) {
-      if (MMenus[LinkData[i]].value != tm.peek(i)) { tm.poke(i, MMenus[LinkData[i]].value); }
+      if (MMenus[LinkData[i]].value != tm.peek(i)) { 
+        if ((MMenus[LinkData[i]].type == 1)&&(MMenus[LinkData[i]].value > 1)) { MMenus[LinkData[i]].value = 0; }
+        tm.poke(i, MMenus[LinkData[i]].value); 
+        }
     }
 }
 // --------------------------
@@ -239,9 +242,9 @@ void ShowStructMenu (byte numItem) {
        case 4: // 4 - Show Change HH/MM
               ShowT2Menu(numItem, xItem);
               break;
-    /*   default: // For Others type show Debug info
+      /* default: // For Others type show Debug info
               lcd.printNumI(numItem,10,10); 
-              lcd.printNumI(x,10,20); 
+              lcd.printNumI(MMenus[numItem].value,10,20); 
               lcd.printNumI(xItem,10,30); 
               lcd.printNumI(MMenus[numItem].type,10,40);*/
         }
@@ -328,7 +331,6 @@ void ShowClock() {
     do
     {
     lcd.clrScr();
-
     // Update Current Time
     rtc_time = tm.getTime();
     MMenus[LinkData[0]].value = rtc_time.hour;
@@ -347,7 +349,7 @@ void ShowClock() {
              if ((!AlarmOn)||(AlarmTime == 0))
              {
              // Speaker Action
-             if (MMenus[LinkData[5]].value == 1) {/* LCDLight (false);*/ playMusic(); }
+             if (MMenus[LinkData[5]].value == 1) {LCDLight (false); playMusic(); }
              // Motor Action
              if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, motorSpeed); }
              AlarmTime = millis();
@@ -356,17 +358,17 @@ void ShowClock() {
              LCDLight (!backlight);
              AlarmOn = true;
             } 
-            /*else if (AlarmOn)
+            else if (AlarmOn)
               {
                 AlarmOn = false;
                 if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, 0);}
-                if (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
+                //вроджеif (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
               }
-            */
+
+        lcd.setFont(SmallFont);
         if (!AlarmOn)
         {
           if ((MMenus[LinkData[5]].value == 1)||(MMenus[LinkData[6]].value == 1)) { lcd.drawBitmap(0, 0, IconAlarmMini, 8, 8); }
-          lcd.setFont(SmallFont);
           if (MMenus[LinkData[2]].value < 10){ lcd.print("0" + String(MMenus[LinkData[2]].value)+":", 10, 1); }
               else lcd.print(String(MMenus[LinkData[2]].value)+":", 10, 1);
           if (MMenus[LinkData[3]].value < 10){ lcd.print("0" + String(MMenus[LinkData[3]].value), 27, 1); }
@@ -393,10 +395,10 @@ void ShowClock() {
       lcd.print(String(rtc_time.min), 47, 12);
     }
     // Show Date
-    //if (MMenus[LinkData[9]].value == 1){
+    if (MMenus[LinkData[9]].value == 1){
       lcd.setFont(SmallFont);
       lcd.print(tm.getDateStr(FORMAT_LONG,FORMAT_LITTLEENDIAN,'/'), CENTER, 41);
-    //}
+    }
     
     if (!AlarmOn) {
     for (byte i=0; i < 5; i++){
