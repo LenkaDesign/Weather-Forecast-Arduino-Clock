@@ -362,7 +362,7 @@ void ShowClock() {
               {
                 AlarmOn = false;
                 if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, 0);}
-                //вроджеif (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
+                //if (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
               }
 
         lcd.setFont(SmallFont);
