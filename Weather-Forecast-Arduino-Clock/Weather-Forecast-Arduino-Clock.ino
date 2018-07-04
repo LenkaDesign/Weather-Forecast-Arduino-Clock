@@ -2,6 +2,7 @@
 #include <LCD5110_Graph.h>   // LCD5110 Module
 #include <DS1307.h>       // DS1307 RTC
 #include <Adafruit_BME280.h> // BME
+#define FIRST_START   false // First Start Settings
 // ========================================
 
 // PINs Define
@@ -43,12 +44,12 @@
 boolean backlight = false; // indicates backlight
 const byte motorSpeed = 80;
 int lightIntensity = 0;
-const byte intensityThreshold = 50; // bigger than this value means it's dark. 100 is a good value
+const byte intensityThreshold = 70; // bigger than this value means it's dark. 100 is a good value
 
 // Init Link Data with Menu Item Value as Below
-// CurHour [11], CurMin [12], AlarmHour [17], AlarmMin [18], AlarmActive [5], 
-// MelodyAlarm [8], BellAlarm [9], WeatherMeasure [14], WeatherWarning[15]
-const byte LinkData[] = {11, 12, 17, 18, 5, 8, 9, 14, 15};
+// CurHour [11], CurMin [12], AlarmHour [18], AlarmMin [19], AlarmActive [5], 
+// MelodyAlarm [8], BellAlarm [9], WeatherMeasure [14], WeatherWarning[15], ShowDate [13]
+const byte LinkData[] = {11, 12, 18, 19, 5, 8, 9, 15, 16, 13};
 
 // Button Array
 // { AnyKey, Up, Down, OK }
@@ -140,15 +141,16 @@ void setup() {
   // Clock Menu [2]
   MMenus[11] = (Menu_Struct) {"Hours",     4, 0, 2};
   MMenus[12] = (Menu_Struct) {"Minutes",   4, 0, 2};
-  MMenus[13] = (Menu_Struct) {"Save&Exit", 0, 0, 2};
+  MMenus[13] = (Menu_Struct) {"Show Date",   1, 1, 2};
+  MMenus[14] = (Menu_Struct) {"Save&Exit", 0, 0, 2};
   // Weather Menu [3]
-  MMenus[14] = (Menu_Struct) {"Metric",     1, 0, 3};
-  MMenus[15] = (Menu_Struct) {"Warnings",   1, 0, 3};
-  MMenus[16] = (Menu_Struct) {"Main Menu",  0, 0, 3};
+  MMenus[15] = (Menu_Struct) {"Metric",     1, 0, 3};
+  MMenus[16] = (Menu_Struct) {"Warnings",   1, 0, 3};
+  MMenus[17] = (Menu_Struct) {"Main Menu",  0, 0, 3};
   // Set Alarm Time [4]
-  MMenus[17] = (Menu_Struct) {"Hours",     4, 6, 4};
-  MMenus[18] = (Menu_Struct) {"Minutes",   4, 0, 4}; 
-  MMenus[19] = (Menu_Struct) {"Save&Exit", 0, 0, 4}; 
+  MMenus[18] = (Menu_Struct) {"Hours",     4, 6, 4};
+  MMenus[19] = (Menu_Struct) {"Minutes",   4, 0, 4}; 
+  MMenus[20] = (Menu_Struct) {"Save&Exit", 0, 0, 4}; 
 
   // Load Default value from RTC Module Memory
   for (byte i = 0; i < (sizeof(LinkData)/sizeof(byte)); i++) { MMenus[LinkData[i]].value = tm.peek(i);}
