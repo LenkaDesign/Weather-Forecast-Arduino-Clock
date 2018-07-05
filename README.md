@@ -1,5 +1,5 @@
 # Weather Forecast Arduino Clock
-Weather forecast, clock and alarm using Nokia 5110, DS1307 RTC and BME280
+Weather forecast, clock and alarm using Arduino, Nokia 5110, DS1307 RTC and BME280
 
 Last updated: 5 Jul 2018
 
