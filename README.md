@@ -14,6 +14,8 @@ So far, besides the clock itself, these are the functions that this project is a
 + Menu for settings: alarm, changing time, enable/disable date display, enable/disable weather change sound notifications and switch between imperial and metric units
 + Alarm settings - on/off, setting the time, setting the melody and/or bells for notifications
 
+[![HOW TO video here](https://img.youtube.com/vi/-FDuY51MYSw/0.jpg)](https://www.youtube.com/watch?v=-FDuY51MYSw)
+
 Project write-up here:
 
 https://www.instructables.com/id/Weather-Forecast-Clock-Using-Old-Alarm-and-Arduino/
