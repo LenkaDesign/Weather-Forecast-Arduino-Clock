@@ -2,7 +2,6 @@
 #include <LCD5110_Graph.h>   // LCD5110 Module
 #include <DS1307.h>       // DS1307 RTC
 #include <Adafruit_BME280.h> // BME
-#define FIRST_START   false // First Start Settings
 // ========================================
 
 // PINs Define
@@ -43,8 +42,7 @@
 // Main array
 boolean backlight = false; // indicates backlight
 const byte motorSpeed = 80;
-int lightIntensity = 0;
-const byte intensityThreshold = 70; // bigger than this value means it's dark. 100 is a good value
+byte lightIntensity[2] = {0, 0};
 
 // Init Link Data with Menu Item Value as Below
 // CurHour [11], CurMin [12], AlarmHour [18], AlarmMin [19], AlarmActive [5], 
@@ -158,11 +156,12 @@ void setup() {
 
   // Setup LCD
   lcd.InitLCD();
+  lcd.clrScr();
   lcd.setFont(SmallFont);
   pinMode(LCD_LIGHT, OUTPUT); // define backlight pin as output
-  LCDLight(false); //Turn Backlight OFF
+  //LCDLight(false); //Turn Backlight OFF
 
-  lcd.clrScr();
+  
 
   // Setup interrupt button
   pinMode(BUT_OK, INPUT);
@@ -211,17 +210,18 @@ void loop() {
   if (rtc_time.min % 12 == 0) 
     {
       BMEGetData();
+      LCDLight(false);
     }
   drawTemperature();
-  KeepCalm(5000);
+  KeepCalm(2000);
   drawHumidity();
-  KeepCalm(3000);
+  KeepCalm(2000);
   if (rtc_time.min % 3 == 0) 
     {
       drawVoltage();  
       KeepCalm(3000);  
     }
   drawWeather();
-  KeepCalm(5000);
+  KeepCalm(3000);
 }
 // ========================================
