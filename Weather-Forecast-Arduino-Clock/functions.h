@@ -17,16 +17,17 @@ void LCDLight(bool on)
 void CheckLCDLigh() {
   digitalWrite(LDR_VCC, HIGH); //Turn Light Sensor ON
   delay(200);
-  lightIntensity = analogRead(LDR_PIN);
+  lightIntensity[1] = map(analogRead(LDR_PIN), 0, 1023, 0, 250);
   digitalWrite(LDR_VCC, LOW); //Turn Light Sensor OFF to save power
-  if ((lightIntensity > intensityThreshold) && (backlight == false)) // Check Intensity
+  if ((abs(lightIntensity[1]-lightIntensity[0]) > 12) && (backlight == false)) // Check Intensity
     {
       LCDLight(true); // Off
-    } else if (lightIntensity < intensityThreshold) { LCDLight(false); }
+      lightIntensity[0] = lightIntensity[1];
+    } //else if (forecast_count % 2 == 0){ LCDLight(false); }
 }
 // ========================================
 
-// -----------------------------
+// ----------------------------- 
 // -=[ MENU & BUTTON SECTION ]=-
 // -----------------------------
 // Define Struct for Menu
@@ -460,12 +461,13 @@ float BMEGetData()
   temperature = bme.readTemperature();
   humidity = bme.readHumidity();
   pressure = bme.readPressure();
-  pressure = pressure/100.0F;
+  pressure = round(pressure/100.0F);
 
   // Calculate Pressure
   if (my_forecast[0] == 0)
     { // First Start or After Update Settings
       for (byte i = 0; i < 4; i++) { my_forecast[i] = pressure; }
+      my_forecast[1] = 0; // Difference 
     } else {
       // Check Change
       if (my_forecast[0] > pressure) my_forecast[4] = 1; // Up
@@ -549,12 +551,15 @@ void drawWeather(){
       lcd.print("Rainy Weather",CENTER, 0);
       break;
     default: 
-      lcd.drawBitmap(28, 13, IconWeather, 24, 24);
+      lcd.drawBitmap(28, 13, IconCloudy, 24, 24);
       lcd.print("Cloudy Weather",CENTER, 0);
   } // .end Switch Select
 
   
   // Print Pressure and Forecast
+  /*for (byte i = 0; i < 4; i++)
+    lcd.print(String(round(my_forecast[i]))+" hPa "+String(my_forecast[4]),CENTER,10+(10*i)); */
+  
   if (MMenus[LinkData[7]].value == 0) lcd.print(String(my_forecast[0])+" hPa",CENTER,38); 
     else lcd.print(String(round(my_forecast[0]*0.7501))+" mmHg",CENTER,38); 
     
@@ -645,7 +650,7 @@ void drawVoltage (){
   lcd.printNumF(voltage,1,34,15);
   lcd.print("V",55,15);
   lcd.print("Light:",34,25);
-  lcd.printNumI(lightIntensity,34,35);
+  lcd.print(String(lightIntensity[1]),34,35);
   lcd.update();
 }
 // ========================================
