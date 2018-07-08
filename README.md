@@ -1,7 +1,7 @@
 # Weather Forecast Arduino Clock
 Weather forecast, clock and alarm using Arduino, Nokia 5110, DS1307 RTC and BME280
 
-Last updated: 5 Jul 2018
+Last updated: 9 Jul 2018
 
 Come back to check for new versions.
 
@@ -13,6 +13,10 @@ So far, besides the clock itself, these are the functions that this project is a
 + Display of temperature, pressure and humidity (for humidity it will indicate whether it's too dry)
 + Menu for settings: alarm, changing time, enable/disable date display, enable/disable weather change sound notifications and switch between imperial and metric units
 + Alarm settings - on/off, setting the time, setting the melody and/or bells for notifications
+
+DEMO Video Functions of the Weather Forecast Arduino Clock:
+
+[![DEMO Main Functions](https://img.youtube.com/vi/A75jJtem8xQ/0.jpg)](https://www.youtube.com/watch?v=A75jJtem8xQ)
 
 Here's a how-to video of the Weather Forecast device made using this code:
 
