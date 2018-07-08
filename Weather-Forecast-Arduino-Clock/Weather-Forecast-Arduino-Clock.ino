@@ -41,6 +41,8 @@
 // ========================================
 // Main array
 boolean backlight = false; // indicates backlight
+byte voltagePercent = 100;
+byte old_min = 0;
 const byte motorSpeed = 80;
 byte lightIntensity[2] = {0, 0};
 
@@ -199,6 +201,7 @@ void setup() {
   DebounceTime = millis();
  
   BMEGetData();
+  old_min = rtc_time.min;
 }
 // ========================================
 // -=[ LOOP ]=-
@@ -207,10 +210,11 @@ void loop() {
   CheckLCDLigh();
   ShowClock();
   KeepCalm(10);
-  if (rtc_time.min % 12 == 0) 
+  if ((rtc_time.min % 12 == 0)&&(old_min != rtc_time.min) )
     {
       BMEGetData();
       LCDLight(false);
+      old_min = rtc_time.min;
     }
   drawTemperature();
   KeepCalm(2000);
