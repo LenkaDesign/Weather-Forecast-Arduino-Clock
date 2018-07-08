@@ -5,9 +5,11 @@ void LCDLight(bool on)
   if (on == false) {
   digitalWrite(LCD_LIGHT, HIGH);
   backlight = false;
+  if (voltagePercent < 100) lcd.enableSleep();
   } else {
     digitalWrite(LCD_LIGHT, LOW);
     backlight = true; 
+    if (voltagePercent < 100) lcd.disableSleep();
   }
 }
 // ========================================
@@ -19,7 +21,7 @@ void CheckLCDLigh() {
   delay(200);
   lightIntensity[1] = map(analogRead(LDR_PIN), 0, 1023, 0, 250);
   digitalWrite(LDR_VCC, LOW); //Turn Light Sensor OFF to save power
-  if ((abs(lightIntensity[1]-lightIntensity[0]) > 12) && (backlight == false)) // Check Intensity
+  if ((abs(lightIntensity[1]-lightIntensity[0]) > 10) && (backlight == false)) // Check Intensity
     {
       LCDLight(true); // Off
       lightIntensity[0] = lightIntensity[1];
@@ -557,9 +559,6 @@ void drawWeather(){
 
   
   // Print Pressure and Forecast
-  /*for (byte i = 0; i < 4; i++)
-    lcd.print(String(round(my_forecast[i]))+" hPa "+String(my_forecast[4]),CENTER,10+(10*i)); */
-  
   if (MMenus[LinkData[7]].value == 0) lcd.print(String(my_forecast[0])+" hPa",CENTER,38); 
     else lcd.print(String(round(my_forecast[0]*0.7501))+" mmHg",CENTER,38); 
     
@@ -623,7 +622,6 @@ void fillBat(byte percent){
 // Voltage and Lighting Show
 // -----------------
 void drawVoltage (){
-  byte voltagePercent = 0;
   float voltage = analogRead(VOLT_PIN) * (5.0 / 1023.0);
   
   lcd.clrScr();
