@@ -14,7 +14,7 @@ So far, besides the clock itself, these are the functions that this project is a
 + Menu for settings: alarm, changing time, enable/disable date display, enable/disable weather change sound notifications and switch between imperial and metric units
 + Alarm settings - on/off, setting the time, setting the melody and/or bells for notifications
 
-DEMO Video Functions of the Weather Forecast Arduino Clock:
+DEMO Video - Functions of the Weather Forecast Arduino Clock:
 
 [![DEMO Main Functions](https://img.youtube.com/vi/A75jJtem8xQ/0.jpg)](https://www.youtube.com/watch?v=A75jJtem8xQ)
 
