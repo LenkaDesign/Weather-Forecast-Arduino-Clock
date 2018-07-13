@@ -1,15 +1,15 @@
 // LCD Backlight Turn On/Off
 // -----------------
-void LCDLight(bool on)
+void LCDLight(bool on, bool ala = false)
 {
   if (on == false) {
   digitalWrite(LCD_LIGHT, HIGH);
   backlight = false;
-  if (voltagePercent < 100) lcd.enableSleep();
+  if ((voltagePercent < 100)&&(!ala)) lcd.enableSleep();
   } else {
     digitalWrite(LCD_LIGHT, LOW);
     backlight = true; 
-    if (voltagePercent < 100) lcd.disableSleep();
+    if ((voltagePercent < 100)||(ala)) lcd.disableSleep();
   }
 }
 // ========================================
@@ -352,13 +352,13 @@ void ShowClock() {
              if ((!AlarmOn)||(AlarmTime == 0))
              {
              // Speaker Action
-             if (MMenus[LinkData[5]].value == 1) {LCDLight (false); playMusic(); }
+             if (MMenus[LinkData[5]].value == 1) {LCDLight (false, true); playMusic(); }
              // Motor Action
              if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, motorSpeed); }
              AlarmTime = millis();
              MotorTurn = true;
              }
-             LCDLight (!backlight);
+             LCDLight (!backlight, true);
              AlarmOn = true;
             } 
             else if (AlarmOn)
@@ -434,7 +434,7 @@ void ShowClock() {
       if (ButtonStatus[0]) {
           if (MMenus[LinkData[6]].value == 1) { analogWrite(MOTOR_PIN, 0);}
           //if (MMenus[LinkData[5]].value == 1) { noTone(BUZZ_PIN); }
-          LCDLight (false); // LCD Light On
+          LCDLight (false, true); // LCD Light On
           MMenus[LinkData[4]].value = 0; // Change Item Value 
           UpdateSettings(); // Save New Settings on RTC Module
           AlarmOn = false;
@@ -533,7 +533,7 @@ void drawWeather(){
   norma = GetNormalPressure(altitude, temperature-5); // Get Norma
 
   // Weather Forecasting 
-  if ((my_forecast[0] > norma+10) && (my_forecast[1] < 2)&&(my_forecast[4] <= 1)) {sel = 1;}
+  if ((my_forecast[0] > norma+7) && (my_forecast[1] < 2)&&(my_forecast[4] <= 1)) {sel = 1;}
   //if  (my_forecast[0] < norma-5) {sel = 3;}
   else if ((my_forecast[0] < norma+15) && (my_forecast[1] > 2)) {sel = 2;}
   else if ((my_forecast[0] > (norma-30)) && (my_forecast[0] < (norma-3)) && (my_forecast[4] == 2)) {sel = 2;}
