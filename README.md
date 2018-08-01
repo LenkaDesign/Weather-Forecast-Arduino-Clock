@@ -21,13 +21,11 @@ Here's a how-to video of the Weather Forecast device made using this code:
 [![HOW TO video here](https://img.youtube.com/vi/-FDuY51MYSw/0.jpg)](https://www.youtube.com/watch?v=-FDuY51MYSw)
 
 Project write-up here:
-
 https://www.instructables.com/id/Weather-Forecast-Clock-Using-Old-Alarm-and-Arduino/
 
 IMPORTANT: Before uploading the code, please insert the CR2032 battery into RTC module and set the current time. We will upload the script later that will do this automatically. For the moment please use the SetTime script from the default DS1307 lib: https://github.com/michaelmargolis/arduino_time
 
 BME280 library:
-
 https://github.com/adafruit/Adafruit_BME280_Library
 
 
