@@ -24,7 +24,7 @@ Project write-up here:
 
 https://www.instructables.com/id/Weather-Forecast-Clock-Using-Old-Alarm-and-Arduino/
 
-
+IMPORTANT: Before uploading the code, please insert the CR2032 battery into RTC module and set the current time. We will upload the script later that will do this automatically. For the moment please use the SetTime script from the default DS1307 lib: https://github.com/michaelmargolis/arduino_time
 
 BME280 library:
 
