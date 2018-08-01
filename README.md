@@ -35,7 +35,7 @@ RTC DS1307 and Nokia 5110 LCD libraries used in this project:
 
 http://www.rinkydinkelectronics.com/library.php?id=34
 
-http://www.rinkydinkelectronics.com/library.php?id=44
+http://www.rinkydinkelectronics.com/library.php?id=47
 
 A copy of these libraries is also placed here in case the original site goes down.
 
